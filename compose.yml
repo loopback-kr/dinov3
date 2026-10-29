@@ -1,0 +1,25 @@
+x-podman:
+  in_pod: false
+
+services:
+  vscode:
+    image: dinov3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: Container
+    shm_size: 64g
+    devices: [nvidia.com/gpu=all]
+    environment:
+      - TZ=Asia/Seoul
+      - VSCODE_TUNNEL_NAME=dinov3
+    volumes:
+      - $HOME/.gitconfig:/root/.gitconfig:ro
+      - $HOME/.cache:/root/.cache
+      - $HOME/.claude:/root/.claude
+      - $HOME/.vscode-server:/root/.vscode-server
+      - $HOME/.vscode/cli/token.json:/root/.vscode/cli/token.json:ro
+      - $HOME/.vscode/cli/servers:/root/.vscode/cli/servers
+      - .:/workspace
+    working_dir: /workspace
+    entrypoint: sh -c "echo '* Downloading VS Code CLI...'; curl -sSL 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' | tar -xzC /usr/local/bin code; exec code tunnel --no-sleep --accept-server-license-terms --log error --name $$VSCODE_TUNNEL_NAME"
